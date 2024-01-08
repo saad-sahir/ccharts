@@ -16,14 +16,19 @@ class Strategy:
         ## row = a row in an ohlc df with conditions
 
         for condition in self.conditions:
+            for trade in self.marketenv.trades:
+                if trade.status and condition['exit'](row):
+                    trade.close_trade(row['Date'], row['Close'])
+
             if condition['enter'](row):
+                entry_price = row['Close']
                 trade = Trade(
                     self.market,
-                    self.data.iloc[self.current_index],
+                    row['Date'],
+                    entry_price,
                     1,
                     condition['type'],
                     self.interval
                 )
-                self.marketenv.current_index += 1
-                self.marketenv.trade.append(trade)
+                self.marketenv.trades.append(trade)
                 return True
